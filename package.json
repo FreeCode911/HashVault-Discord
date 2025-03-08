@@ -1,0 +1,20 @@
+{
+  "name": "nodejs-sandbox",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node --watch index.js"
+  },
+  "keywords": [],
+  "author": "Ives van Hoorne",
+  "license": "MIT",
+  "dependencies": {
+    "asciichart": "^1.5.25",
+    "axios": "^1.8.2",
+    "canvas": "^3.1.0",
+    "chart.js": "^4.4.8",
+    "discord.js": "^14.18.0",
+    "moment": "^2.30.1"
+  }
+}
