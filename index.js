@@ -1,11 +1,14 @@
 const { Client, GatewayIntentBits, EmbedBuilder } = require("discord.js");
 const axios = require("axios");
-const asciichart = require("asciichart"); // Import the charting library
+const express = require("express");
+require("dotenv").config();
+
+const app = express();
+const PORT = process.env.PORT || 3000;
 
 const TOKEN = process.env.TOKEN;
 const CHANNEL_ID = process.env.CHANNEL_ID;
-const WALLET_ADDRESS =
-  "43Yv5u7V93FdhZuJj9pNghX1mEUE9EzmTQUqPM8F3AJpPbAf2zBkAVeVYzePqDA1MbMPki7u29iwoBNuVikn66cQQLPWd7U";
+const WALLET_ADDRESS = process.env.WALLET_ADDRESS;
 const API_URL = `https://api.hashvault.pro/v3/monero/wallet/${WALLET_ADDRESS}/stats?chart=total&inactivityThreshold=10&order=name&period=daily&poolType=false&workers=true`;
 
 const client = new Client({
@@ -25,7 +28,7 @@ function formatHashRate(hashRate) {
 async function fetchMiningStats() {
   try {
     const { data } = await axios.get(API_URL);
-
+    
     const collective = data.collective;
     const revenue = data.revenue;
     const workers = data.collectiveWorkers || [];
@@ -42,11 +45,7 @@ async function fetchMiningStats() {
         workers
           .map(
             (worker) =>
-              `${worker.name.padEnd(10)} | ⚡ ${formatHashRate(
-                worker.hashRate
-              ).padEnd(7)} | ✅ ${worker.validShares
-                .toString()
-                .padEnd(6)} | ⚠️ ${worker.staleShares.toString().padEnd(2)}`
+              `${worker.name.padEnd(10)} | ⚡ ${formatHashRate(worker.hashRate).padEnd(7)} | ✅ ${worker.validShares.toString().padEnd(6)} | ⚠️ ${worker.staleShares.toString().padEnd(2)}`
           )
           .join("\n") +
         "```"
@@ -99,3 +98,12 @@ client.once("ready", () => {
 });
 
 client.login(TOKEN);
+
+// Web server to show bot status
+app.get("/", (req, res) => {
+  res.send("Bot is online!");
+});
+
+app.listen(PORT, () => {
+  console.log(`🌐 Web server running on port ${PORT}`);
+});
