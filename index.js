@@ -56,7 +56,7 @@ async function fetchMiningStats() {
         workers
           .map(
             (worker) =>
-              `${worker.name.padEnd(10)}|⚡${formatHashRate(worker.hashRate).padEnd(7)}|${worker.validShares.toString().padEnd(6)}|${worker.staleShares.toString().padEnd(2)}|${formatTimeAgo(worker.lastShare)}`
+              `${worker.name.padEnd(6)} | ⚡${formatHashRate(worker.hashRate).padEnd(7)} | ${worker.validShares.toString().padEnd(6)} | ${worker.staleShares.toString().padEnd(2)} | ${formatTimeAgo(worker.lastShare)}`
           )
           .join("\n") +
         "```"
