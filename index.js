@@ -25,10 +25,20 @@ function formatHashRate(hashRate) {
   return `${hashRate} H/s`;
 }
 
+// Function to format timestamps to human-readable date
+function formatTimestamp(timestamp) {
+  const date = new Date(timestamp);
+  return `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
+}
+
 async function fetchMiningStats() {
   try {
     const { data } = await axios.get(API_URL);
     
+    if (!data.collective || !data.revenue) {
+      throw new Error("Missing mining data from the API");
+    }
+
     const collective = data.collective;
     const revenue = data.revenue;
     const workers = data.collectiveWorkers || [];
@@ -38,14 +48,14 @@ async function fetchMiningStats() {
       ? (revenue.confirmedBalance / 1e12).toFixed(8)
       : "0.00000000";
 
-    // Worker Summary
+    // Worker Summary with lastShare
     const workerSummary = workers.length
-      ? "```Worker   | ⚡ Hash Rate | ✅ Shares | ⚠️ Stale \n" +
-        "───────────|────────────|──────────|────────\n" +
+      ? "```Worker   | ⚡ Hash Rate | ✅ Shares | ⚠️ Stale | Last Share \n" +
+        "───────────|────────────|──────────|────────|───────────\n" +
         workers
           .map(
             (worker) =>
-              `${worker.name.padEnd(10)} | ⚡ ${formatHashRate(worker.hashRate).padEnd(7)} | ✅ ${worker.validShares.toString().padEnd(6)} | ⚠️ ${worker.staleShares.toString().padEnd(2)}`
+              `${worker.name.padEnd(10)} | ⚡ ${formatHashRate(worker.hashRate).padEnd(7)} | ✅ ${worker.validShares.toString().padEnd(6)} | ⚠️ ${worker.staleShares.toString().padEnd(2)} | ${formatTimestamp(worker.lastShare)}`
           )
           .join("\n") +
         "```"
@@ -88,13 +98,15 @@ async function fetchMiningStats() {
     }
   } catch (error) {
     console.error("Error fetching mining stats:", error.message);
+    const channel = await client.channels.fetch(CHANNEL_ID);
+    await channel.send(`❌ Error fetching mining stats: ${error.message}`);
   }
 }
 
 client.once("ready", () => {
   console.log(`✅ Logged in as ${client.user.tag}`);
   fetchMiningStats();
-  setInterval(fetchMiningStats, 20000);
+  setInterval(fetchMiningStats, 20000); // Update every 20 seconds
 });
 
 client.login(TOKEN);
