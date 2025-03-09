@@ -1,6 +1,7 @@
 const { Client, GatewayIntentBits, EmbedBuilder } = require("discord.js");
 const axios = require("axios");
 const express = require("express");
+const { formatDistanceToNow } = require("date-fns");
 require("dotenv").config();
 
 const app = express();
@@ -25,16 +26,16 @@ function formatHashRate(hashRate) {
   return `${hashRate} H/s`;
 }
 
-// Function to format timestamps to human-readable date
-function formatTimestamp(timestamp) {
-  const date = new Date(timestamp);
-  return `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
+// Function to format the 'lastShare' as "X minutes ago"
+function formatTimeAgo(lastShareTimestamp) {
+  const lastShareDate = new Date(lastShareTimestamp);
+  return formatDistanceToNow(lastShareDate) + " ago";
 }
 
 async function fetchMiningStats() {
   try {
     const { data } = await axios.get(API_URL);
-    
+
     if (!data.collective || !data.revenue) {
       throw new Error("Missing mining data from the API");
     }
@@ -48,14 +49,14 @@ async function fetchMiningStats() {
       ? (revenue.confirmedBalance / 1e12).toFixed(8)
       : "0.00000000";
 
-    // Worker Summary with lastShare
+    // Worker Summary with lastShare as "X minutes ago"
     const workerSummary = workers.length
       ? "```Worker   | ⚡ Hash Rate | ✅ Shares | ⚠️ Stale | Last Share \n" +
         "───────────|────────────|──────────|────────|───────────\n" +
         workers
           .map(
             (worker) =>
-              `${worker.name.padEnd(10)} | ⚡ ${formatHashRate(worker.hashRate).padEnd(7)} | ✅ ${worker.validShares.toString().padEnd(6)} | ⚠️ ${worker.staleShares.toString().padEnd(2)} | ${formatTimestamp(worker.lastShare)}`
+              `${worker.name.padEnd(10)} | ⚡ ${formatHashRate(worker.hashRate).padEnd(7)} | ${worker.validShares.toString().padEnd(6)} | ${worker.staleShares.toString().padEnd(2)} | ${formatTimeAgo(worker.lastShare)}`
           )
           .join("\n") +
         "```"
