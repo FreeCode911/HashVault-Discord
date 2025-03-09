@@ -52,7 +52,7 @@ async function fetchMiningStats() {
     // Worker Summary with lastShare as "X minutes ago"
     const workerSummary = workers.length
       ? "```Worker |⚡Hash Rate |✅Shares |⚠️Stale | Last Share \n" +
-        "───────────|────────────|──────────|────────|───────────\n" +
+        "─────────|──────────|────────|────────|─────────\n" +
         workers
           .map(
             (worker) =>
